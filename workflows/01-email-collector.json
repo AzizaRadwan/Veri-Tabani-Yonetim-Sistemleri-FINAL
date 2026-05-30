@@ -1,0 +1,171 @@
+{
+  "name": "01 - Email Collector",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0932ced7-62f5-4133-bd12-a8a85a5f6746",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3e958a0d-fd2b-47c6-9210-a22d6e51cc44",
+              "name": "account_id",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "4075430e-eceb-41d5-8aca-755f0ebc7a37",
+              "name": "external_email_id",
+              "value": "n8n-email-3001",
+              "type": "string"
+            },
+            {
+              "id": "c11410e3-1343-49e1-b33e-0110170572ac",
+              "name": "sender_email",
+              "value": "n8n.customer@example.com",
+              "type": "string"
+            },
+            {
+              "id": "e3b3e917-e298-4ee5-8b2b-7dbdf3d982ff",
+              "name": "receiver_email",
+              "value": "support@mailsense.local",
+              "type": "string"
+            },
+            {
+              "id": "eb38f36b-8a97-445f-a705-cac42131401b",
+              "name": "subject",
+              "value": "Urgent refund request from n8n workflow",
+              "type": "string"
+            },
+            {
+              "id": "f49a7857-71b0-4bff-970d-ed5019d0bf78",
+              "name": "body",
+              "value": "Hello, I am very unhappy with the delayed service. I want a refund urgently",
+              "type": "string"
+            },
+            {
+              "id": "35558345-438a-47ba-82ce-681b1e653591",
+              "name": "received_at",
+              "value": "2026-05-18 10:00:00",
+              "type": "string"
+            },
+            {
+              "id": "2ffd8f08-bcb1-430e-b1bc-2b296d64f1ac",
+              "name": "processing_status",
+              "value": "pending",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d09f4295-16f7-4c88-81a7-917d449058aa",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "IF NOT EXISTS (\n    SELECT 1 FROM emails \n    WHERE external_email_id = '{{$json.external_email_id}}'\n)\nBEGIN\n    INSERT INTO emails (\n        account_id,\n        thread_id,\n        external_email_id,\n        sender_email,\n        receiver_email,\n        subject,\n        body,\n        received_at,\n        processing_status\n    )\n    VALUES (\n        1,\n        1,\n        '{{$json.external_email_id}}',\n        '{{$json.sender_email}}',\n        '{{$json.receiver_email}}',\n        '{{$json.subject}}',\n        '{{$json.body}}',\n        '{{$json.received_at}}',\n        '{{$json.processing_status}}'\n    );\nEND",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "9ff33f98-0a38-4f40-9c04-8a24037dc27a",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO workflow_logs (\n    workflow_name,\n    email_id,\n    execution_status,\n    log_message\n)\nVALUES (\n    '01 - Email Collector',\n    (\n        SELECT TOP 1 email_id\n        FROM emails\n        WHERE external_email_id = '{{$node[\"Edit Fields\"].json[\"external_email_id\"]}}'\n        ORDER BY email_id DESC\n    ),\n    'success',\n    'New test email processed by n8n Email Collector workflow.'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "ee3debaf-6173-49e0-8896-660afdccbeaf",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dae88c05-85df-435f-a5df-1d14a2b6135f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "23ba6e784658863458f545042b21399a617263df4b20efd283d225959534d74a"
+  },
+  "id": "HXbiMgGhU3BNBITB",
+  "tags": []
+}

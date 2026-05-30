@@ -1,0 +1,119 @@
+{
+  "name": "02 - AI Sentiment Analysis",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c8e584a0-8a19-43e6-aec2-7dfee3dae52b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT TOP 1\n    email_id,\n    sender_email,\n    receiver_email,\n    subject,\n    body,\n    received_at\nFROM emails\nWHERE processing_status = 'pending'\nORDER BY email_id DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "58936c83-ddec-4914-96d4-39116095f484",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = $json;\nconst text = `${email.subject} ${email.body}`.toLowerCase();\n\nlet sentimentLabel = \"neutral\";\nlet sentimentScore = 0.0;\nlet angerScore = 0.1;\nlet satisfactionScore = 0.4;\nlet urgencyScore = 0.3;\nlet summary = \"The email has a neutral tone and does not show a strong emotional signal.\";\n\nif (\n  text.includes(\"unhappy\") ||\n  text.includes(\"angry\") ||\n  text.includes(\"refund\") ||\n  text.includes(\"delayed\") ||\n  text.includes(\"complaint\") ||\n  text.includes(\"cancel\")\n) {\n  sentimentLabel = \"negative\";\n  sentimentScore = -0.82;\n  angerScore = 0.75;\n  satisfactionScore = 0.10;\n  urgencyScore = 0.85;\n  summary = \"The customer expresses dissatisfaction and requests urgent action.\";\n}\n\nif (\n  text.includes(\"thank\") ||\n  text.includes(\"helpful\") ||\n  text.includes(\"friendly\") ||\n  text.includes(\"solved\")\n) {\n  sentimentLabel = \"positive\";\n  sentimentScore = 0.88;\n  angerScore = 0.0;\n  satisfactionScore = 0.92;\n  urgencyScore = 0.2;\n  summary = \"The customer expresses satisfaction and positive feedback.\";\n}\n\nreturn [\n  {\n    json: {\n      email_id: email.email_id,\n      sentiment_label: sentimentLabel,\n      sentiment_score: sentimentScore,\n      anger_score: angerScore,\n      satisfaction_score: satisfactionScore,\n      urgency_score: urgencyScore,\n      summary: summary\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "e55a5206-b829-49ee-845d-fc9fbe03d078",
+      "name": "Generate Sentiment Result"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sentiment_analysis (\n    email_id,\n    sentiment_label,\n    sentiment_score,\n    anger_score,\n    satisfaction_score,\n    urgency_score,\n    summary\n)\nVALUES (\n    {{$json.email_id}},\n    '{{$json.sentiment_label}}',\n    {{$json.sentiment_score}},\n    {{$json.anger_score}},\n    {{$json.satisfaction_score}},\n    {{$json.urgency_score}},\n    '{{$json.summary}}'\n);\n\nUPDATE emails\nSET processing_status = 'processed'\nWHERE email_id = {{$json.email_id}};\n\nINSERT INTO workflow_logs (\n    workflow_name,\n    email_id,\n    execution_status,\n    log_message\n)\nVALUES (\n    '02 - AI Sentiment Analysis',\n    {{$json.email_id}},\n    'success',\n    'Sentiment analysis completed and saved by n8n workflow.'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "a2e093df-88bc-4fa9-b29c-65c3fd63cb8d",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Generate Sentiment Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Sentiment Result": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "83b6cd93-a69a-45b7-af93-b6d6a0016e7d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "23ba6e784658863458f545042b21399a617263df4b20efd283d225959534d74a"
+  },
+  "id": "WKDumGnXDGoxSNZq",
+  "tags": []
+}

@@ -1,0 +1,119 @@
+{
+  "name": "06 - Alert Notification",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "34242ba8-0849-4d9e-a52d-56404af9415b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT TOP 1\n    alert_id,\n    email_id,\n    risk_id,\n    alert_type,\n    alert_message,\n    alert_status,\n    created_at\nFROM alerts\nWHERE alert_status = 'pending'\nORDER BY alert_id DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "977a8c23-792b-4b2e-88cc-6bbdca98f43d",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const alert = $json;\n\nconst notificationMessage = `\nMAILSENSE AI ALERT\n\nAlert ID: ${alert.alert_id}\nEmail ID: ${alert.email_id}\nRisk ID: ${alert.risk_id}\nMessage: ${alert.alert_message}\nCreated At: ${alert.created_at}\n\nAction Required:\nPlease review the related email and take necessary action.\n`;\n\nreturn [\n  {\n    json: {\n      alert_id: alert.alert_id,\n      email_id: alert.email_id,\n      notification_message: notificationMessage\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "adecbeb6-60b6-433f-ab16-382e50478b3b",
+      "name": "Prepare Alert Notification"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE alerts\nSET \n    alert_status = 'sent',\n    sent_at = GETDATE()\nWHERE alert_id = {{$json.alert_id}};\n\nINSERT INTO workflow_logs (\n    workflow_name,\n    email_id,\n    execution_status,\n    log_message\n)\nVALUES (\n    '06 - Alert Notification',\n    {{$json.email_id}},\n    'success',\n    'Pending alert notification prepared and marked as sent by n8n workflow.'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "7b860587-5dd5-43a7-b48f-a3c73abaab7f",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Prepare Alert Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Alert Notification": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fe2f258a-ad87-4cc1-abe7-061fd5bcd206",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "23ba6e784658863458f545042b21399a617263df4b20efd283d225959534d74a"
+  },
+  "id": "FChDbIF2uePtKwQv",
+  "tags": []
+}

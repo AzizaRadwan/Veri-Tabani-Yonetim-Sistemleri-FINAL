@@ -1,0 +1,30 @@
+# Environment variables
+.env
+.env.local
+
+# n8n sensitive files
+.n8n/
+*.credentials.json
+
+# Logs
+logs/
+*.log
+
+# Database backup files
+*.bak
+*.sql.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Temporary files
+tmp/
+temp/
+
+# Node modules if used later
+node_modules/

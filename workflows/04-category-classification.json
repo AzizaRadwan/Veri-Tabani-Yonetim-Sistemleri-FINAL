@@ -1,0 +1,119 @@
+{
+  "name": "04 - Category Classification",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a5950e44-de9b-4055-bdfc-ad42b37fbc55",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT TOP 1\n    e.email_id,\n    e.sender_email,\n    e.subject,\n    e.body,\n    s.sentiment_label,\n    r.risk_level\nFROM emails e\nLEFT JOIN sentiment_analysis s ON e.email_id = s.email_id\nLEFT JOIN risk_analysis r ON e.email_id = r.email_id\nORDER BY e.email_id DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b665ca43-d6f7-406d-8e20-69be5114f745",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = $json;\nconst text = `${email.subject} ${email.body}`.toLowerCase();\n\nlet categoryName = \"General\";\nlet categoryId = null;\n\nif (\n  text.includes(\"refund\") ||\n  text.includes(\"unhappy\") ||\n  text.includes(\"complaint\") ||\n  text.includes(\"delayed\")\n) {\n  categoryName = \"Complaint\";\n  categoryId = 1;\n}\n\nif (\n  text.includes(\"setup\") ||\n  text.includes(\"error\") ||\n  text.includes(\"technical\") ||\n  text.includes(\"installation\")\n) {\n  categoryName = \"Technical Support\";\n  categoryId = 2;\n}\n\nif (\n  text.includes(\"thank\") ||\n  text.includes(\"helpful\") ||\n  text.includes(\"friendly\") ||\n  text.includes(\"solved\")\n) {\n  categoryName = \"Positive Feedback\";\n  categoryId = 3;\n}\n\nif (\n  text.includes(\"cancel\") ||\n  text.includes(\"legal complaint\") ||\n  email.risk_level === \"critical\"\n) {\n  categoryName = \"Cancellation Risk\";\n  categoryId = 4;\n}\n\nif (\n  text.includes(\"pricing\") ||\n  text.includes(\"enterprise\") ||\n  text.includes(\"plan\")\n) {\n  categoryName = \"Sales Inquiry\";\n  categoryId = 5;\n}\n\nreturn [\n  {\n    json: {\n      email_id: email.email_id,\n      category_id: categoryId,\n      category_name: categoryName\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "1cc5e622-3c0e-4f54-8d1a-880e8567cf3b",
+      "name": "Generate Category Result"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "IF NOT EXISTS (\n    SELECT 1 \n    FROM email_category_map\n    WHERE email_id = {{$json.email_id}}\n      AND category_id = {{$json.category_id}}\n)\nBEGIN\n    INSERT INTO email_category_map (\n        email_id,\n        category_id\n    )\n    VALUES (\n        {{$json.email_id}},\n        {{$json.category_id}}\n    );\nEND;\n\nINSERT INTO workflow_logs (\n    workflow_name,\n    email_id,\n    execution_status,\n    log_message\n)\nVALUES (\n    '04 - Category Classification',\n    {{$json.email_id}},\n    'success',\n    'Category classification completed by n8n workflow.'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "99e3686b-d70c-4094-991a-b903ab3c0164",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Generate Category Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Category Result": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0d9d4ebc-8b4b-4894-95ce-e9d1b68aedd0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "23ba6e784658863458f545042b21399a617263df4b20efd283d225959534d74a"
+  },
+  "id": "uVkkO7EIdoFJyiqr",
+  "tags": []
+}

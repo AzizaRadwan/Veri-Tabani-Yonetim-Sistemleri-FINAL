@@ -1,0 +1,119 @@
+{
+  "name": "03 - Risk Detection",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "78b3b3dc-7391-4bad-88ef-a165f0635c51",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT TOP 1\n    e.email_id,\n    e.sender_email,\n    e.subject,\n    e.body,\n    s.sentiment_label,\n    s.sentiment_score,\n    s.anger_score,\n    s.urgency_score\nFROM emails e\nINNER JOIN sentiment_analysis s ON e.email_id = s.email_id\nWHERE e.processing_status = 'processed'\nORDER BY e.email_id DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a78afa67-0940-45d0-99fa-07306068d96e",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const email = $json;\nconst text = `${email.subject} ${email.body}`.toLowerCase();\n\nlet riskLevel = \"low\";\nlet riskScore = 0.10;\nlet detectedRiskFactors = \"No major risk factor detected.\";\nlet recommendedAction = \"No urgent action required.\";\n\nif (\n  text.includes(\"refund\") ||\n  text.includes(\"unhappy\") ||\n  text.includes(\"delayed\") ||\n  email.sentiment_label === \"negative\"\n) {\n  riskLevel = \"high\";\n  riskScore = 0.82;\n  detectedRiskFactors = \"refund request; delayed service; negative sentiment\";\n  recommendedAction = \"Assign to support manager and respond within 1 hour.\";\n}\n\nif (\n  text.includes(\"legal complaint\") ||\n  text.includes(\"cancel\") ||\n  text.includes(\"angry\")\n) {\n  riskLevel = \"critical\";\n  riskScore = 0.96;\n  detectedRiskFactors = \"legal complaint; cancellation threat; angry language\";\n  recommendedAction = \"Escalate to management immediately and create a priority support ticket.\";\n}\n\nreturn [\n  {\n    json: {\n      email_id: email.email_id,\n      risk_level: riskLevel,\n      risk_score: riskScore,\n      detected_risk_factors: detectedRiskFactors,\n      recommended_action: recommendedAction\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "5f2ad5b6-6113-4d75-8534-1fafbc7a8a53",
+      "name": "Generate Risk Result"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO risk_analysis (\n    email_id,\n    risk_level,\n    risk_score,\n    detected_risk_factors,\n    recommended_action\n)\nVALUES (\n    {{$json.email_id}},\n    '{{$json.risk_level}}',\n    {{$json.risk_score}},\n    '{{$json.detected_risk_factors}}',\n    '{{$json.recommended_action}}'\n);\n\nINSERT INTO workflow_logs (\n    workflow_name,\n    email_id,\n    execution_status,\n    log_message\n)\nVALUES (\n    '03 - Risk Detection',\n    {{$json.email_id}},\n    'success',\n    'Risk analysis completed and saved by n8n workflow.'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "a2b759a9-bc6b-42c4-8e5c-60d7c9ce11b5",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Generate Risk Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Risk Result": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d2f4c4f2-ff4f-451c-ad6b-cf931a86f898",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "23ba6e784658863458f545042b21399a617263df4b20efd283d225959534d74a"
+  },
+  "id": "ueiPVcaUhoJXLjGb",
+  "tags": []
+}

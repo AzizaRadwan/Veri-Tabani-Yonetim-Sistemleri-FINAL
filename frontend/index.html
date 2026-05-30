@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailSense AI Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="dashboard">
+        <aside class="sidebar">
+            <h2>MailSense AI</h2>
+            <p>Email Sentiment & Risk Dashboard</p>
+
+            <nav>
+                <a href="#overview">Overview</a>
+                <a href="#sentiment">Sentiment</a>
+                <a href="#risk">Risk</a>
+                <a href="#keywords">Keywords</a>
+                <a href="#alerts">Alerts</a>
+                <a href="#logs">Workflow Logs</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section id="overview" class="header">
+                <h1>MailSense AI Dashboard</h1>
+                <p>AI-powered email sentiment, risk and trend analysis system.</p>
+            </section>
+
+            <section class="cards">
+                <div class="card">
+                    <h3>Total Emails</h3>
+                    <p id="totalEmails">5</p>
+                </div>
+
+                <div class="card">
+                    <h3>Negative Emails</h3>
+                    <p id="negativeEmails">2</p>
+                </div>
+
+                <div class="card">
+                    <h3>High Risk Emails</h3>
+                    <p id="highRiskEmails">2</p>
+                </div>
+
+                <div class="card">
+                    <h3>Average Risk Score</h3>
+                    <p id="averageRisk">0.48</p>
+                </div>
+            </section>
+
+            <section id="sentiment" class="panel">
+                <h2>Sentiment Distribution</h2>
+                <div class="bar-chart">
+                    <div class="bar-row">
+                        <span>Positive</span>
+                        <div class="bar-bg">
+                            <div class="bar positive" style="width: 20%;">1</div>
+                        </div>
+                    </div>
+
+                    <div class="bar-row">
+                        <span>Neutral</span>
+                        <div class="bar-bg">
+                            <div class="bar neutral" style="width: 40%;">2</div>
+                        </div>
+                    </div>
+
+                    <div class="bar-row">
+                        <span>Negative</span>
+                        <div class="bar-bg">
+                            <div class="bar negative" style="width: 40%;">2</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="risk" class="panel">
+                <h2>High and Critical Risk Emails</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sender</th>
+                            <th>Subject</th>
+                            <th>Risk Level</th>
+                            <th>Risk Score</th>
+                            <th>Recommended Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="riskTable"></tbody>
+                </table>
+            </section>
+
+            <section id="keywords" class="panel">
+                <h2>Most Frequent Keywords</h2>
+                <div id="keywordList" class="keywords"></div>
+            </section>
+
+            <section id="alerts" class="panel">
+                <h2>System Alerts</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertTable"></tbody>
+                </table>
+            </section>
+
+            <section id="logs" class="panel">
+                <h2>Workflow Logs</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Workflow</th>
+                            <th>Status</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTable"></tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+{
+  "name": "07 - Weekly Report Generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f236642e-8e59-4b51-829e-8737907fc236",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    COUNT(e.email_id) AS total_emails,\n    SUM(CASE WHEN s.sentiment_label = 'positive' THEN 1 ELSE 0 END) AS positive_emails,\n    SUM(CASE WHEN s.sentiment_label = 'neutral' THEN 1 ELSE 0 END) AS neutral_emails,\n    SUM(CASE WHEN s.sentiment_label = 'negative' THEN 1 ELSE 0 END) AS negative_emails,\n    SUM(CASE WHEN r.risk_level = 'critical' THEN 1 ELSE 0 END) AS critical_risk_emails,\n    SUM(CASE WHEN r.risk_level = 'high' THEN 1 ELSE 0 END) AS high_risk_emails,\n    AVG(s.sentiment_score) AS average_sentiment_score,\n    AVG(r.risk_score) AS average_risk_score\nFROM emails e\nLEFT JOIN sentiment_analysis s ON e.email_id = s.email_id\nLEFT JOIN risk_analysis r ON e.email_id = r.email_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3604c6a2-b0bd-403f-b219-385976520d79",
+      "name": "Microsoft SQL",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst reportContent = `\nMAILSENSE AI WEEKLY REPORT\n\nTotal Emails: ${data.total_emails}\nPositive Emails: ${data.positive_emails}\nNeutral Emails: ${data.neutral_emails}\nNegative Emails: ${data.negative_emails}\nHigh Risk Emails: ${data.high_risk_emails}\nCritical Risk Emails: ${data.critical_risk_emails}\nAverage Sentiment Score: ${data.average_sentiment_score}\nAverage Risk Score: ${data.average_risk_score}\n\nEvaluation:\nThis weekly report summarizes overall sentiment and risk trends for the week.\n`;\n\nreturn [\n  {\n    json: {\n      report_title: \"Weekly Email Sentiment and Risk Report\",\n      report_type: \"weekly\",\n      start_date: \"2026-05-12\",\n      end_date: \"2026-05-18\",\n      report_content: reportContent,\n      generated_by: 5\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "cc242e97-6dbc-425f-95bb-2e27f7fbce7e",
+      "name": "Generate Weekly Report"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO reports (\n    report_title,\n    report_type,\n    start_date,\n    end_date,\n    report_content,\n    generated_by\n)\nVALUES (\n    '{{$json.report_title}}',\n    '{{$json.report_type}}',\n    '{{$json.start_date}}',\n    '{{$json.end_date}}',\n    '{{$json.report_content}}',\n    {{$json.generated_by}}\n);\n\nINSERT INTO workflow_logs (\n    workflow_name,\n    email_id,\n    execution_status,\n    log_message\n)\nVALUES (\n    '07 - Weekly Report Generator',\n    NULL,\n    'success',\n    'Weekly report generated and saved by n8n workflow.'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "d9f99a62-8534-456f-bc18-2a6154d1a1be",
+      "name": "Microsoft SQL1",
+      "credentials": {
+        "microsoftSql": {
+          "id": "ucXqxHDC1UbH78Fl",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft SQL": {
+      "main": [
+        [
+          {
+            "node": "Generate Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Weekly Report": {
+      "main": [
+        [
+          {
+            "node": "Microsoft SQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "965f37db-ef57-47fc-ada5-f215ea81309c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "23ba6e784658863458f545042b21399a617263df4b20efd283d225959534d74a"
+  },
+  "id": "4kYtXMeQoejAIKFc",
+  "tags": []
+}
