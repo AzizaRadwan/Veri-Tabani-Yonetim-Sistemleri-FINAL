@@ -8,112 +8,256 @@
 </head>
 <body>
 
-    <div class="dashboard">
+    <!-- AUTH PAGE -->
+    <section id="authPage" class="auth-page">
+        <div class="auth-card">
+            <h1>MailSense AI</h1>
+            <p class="subtitle">Email Sentiment, Risk and Trend Analysis System</p>
+
+            <div class="demo-box">
+                <strong>Demo Login</strong>
+                <span>Email: azizaradwan08@gmail.com</span>
+                <span>Password: 123456</span>
+            </div>
+
+            <div class="tabs">
+                <button id="loginTab" class="active">Login</button>
+                <button id="registerTab">Register</button>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email address" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+
+            <form id="registerForm" class="auth-form hidden">
+                <input type="text" id="registerName" placeholder="Full name" required>
+                <input type="email" id="registerEmail" placeholder="Email address" required>
+                <input type="password" id="registerPassword" placeholder="Password" required>
+                <button type="submit">Create Account</button>
+            </form>
+
+            <p id="authMessage" class="message"></p>
+        </div>
+    </section>
+
+    <!-- DASHBOARD PAGE -->
+    <section id="dashboardPage" class="dashboard hidden">
         <aside class="sidebar">
             <h2>MailSense AI</h2>
-            <p>Email Sentiment & Risk Dashboard</p>
+            <p id="currentUserText">Dashboard</p>
 
             <nav>
                 <a href="#overview">Overview</a>
-                <a href="#sentiment">Sentiment</a>
-                <a href="#risk">Risk</a>
-                <a href="#keywords">Keywords</a>
+                <a href="#addEmail">Add Email</a>
+                <a href="#emails">Emails</a>
+                <a href="#charts">Charts</a>
+                <a href="#analysis">Analysis</a>
+                <a href="#aiReplies">AI Replies</a>
                 <a href="#alerts">Alerts</a>
-                <a href="#logs">Workflow Logs</a>
+                <a href="#reports">Reports</a>
+                <a href="#logs">Logs</a>
             </nav>
+
+            <button id="logoutBtn" class="logout-btn">Logout</button>
         </aside>
 
         <main class="main-content">
-            <section id="overview" class="header">
-                <h1>MailSense AI Dashboard</h1>
-                <p>AI-powered email sentiment, risk and trend analysis system.</p>
+
+            <!-- HEADER -->
+            <section id="overview" class="hero">
+                <div>
+                    <h1>MailSense AI Dashboard</h1>
+                    <p>Analyze customer emails, detect sentiment, calculate risk and generate reply suggestions.</p>
+                </div>
+
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    <div>
+                        <strong>System Status</strong>
+                        <small>Active Demo Mode</small>
+                    </div>
+                </div>
             </section>
 
+            <!-- SUMMARY CARDS -->
             <section class="cards">
                 <div class="card">
                     <h3>Total Emails</h3>
-                    <p id="totalEmails">5</p>
+                    <p id="totalEmails">0</p>
                 </div>
-
                 <div class="card">
                     <h3>Negative Emails</h3>
-                    <p id="negativeEmails">2</p>
+                    <p id="negativeEmails">0</p>
                 </div>
-
                 <div class="card">
-                    <h3>High Risk Emails</h3>
-                    <p id="highRiskEmails">2</p>
+                    <h3>High/Critical Risk</h3>
+                    <p id="highRiskEmails">0</p>
                 </div>
-
                 <div class="card">
-                    <h3>Average Risk Score</h3>
-                    <p id="averageRisk">0.48</p>
+                    <h3>AI Replies</h3>
+                    <p id="totalReplies">0</p>
                 </div>
             </section>
 
-            <section id="sentiment" class="panel">
-                <h2>Sentiment Distribution</h2>
-                <div class="bar-chart">
-                    <div class="bar-row">
-                        <span>Positive</span>
-                        <div class="bar-bg">
-                            <div class="bar positive" style="width: 20%;">1</div>
-                        </div>
+            <!-- ADD EMAIL -->
+            <section id="addEmail" class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Add New Email</h2>
+                        <p>Add a customer email and analyze it automatically.</p>
                     </div>
+                </div>
 
-                    <div class="bar-row">
-                        <span>Neutral</span>
-                        <div class="bar-bg">
-                            <div class="bar neutral" style="width: 40%;">2</div>
-                        </div>
-                    </div>
+                <form id="emailForm" class="email-form">
+                    <input type="email" id="senderEmail" placeholder="Sender email" required>
+                    <input type="text" id="emailSubject" placeholder="Email subject" required>
+                    <textarea id="emailBody" placeholder="Email body" required></textarea>
+                    <button type="submit">Save and Analyze Email</button>
+                </form>
+            </section>
 
-                    <div class="bar-row">
-                        <span>Negative</span>
-                        <div class="bar-bg">
-                            <div class="bar negative" style="width: 40%;">2</div>
-                        </div>
+            <!-- FILTERS -->
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Email Filters</h2>
+                        <p>Filter emails by sentiment or risk level.</p>
                     </div>
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="negative">Negative</button>
+                    <button class="filter-btn" data-filter="high">High Risk</button>
+                    <button class="filter-btn" data-filter="critical">Critical</button>
                 </div>
             </section>
 
-            <section id="risk" class="panel">
-                <h2>High and Critical Risk Emails</h2>
+            <!-- EMAILS -->
+            <section id="emails" class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Email Inbox</h2>
+                        <p>All saved customer emails are listed here.</p>
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Sender</th>
                             <th>Subject</th>
-                            <th>Risk Level</th>
-                            <th>Risk Score</th>
-                            <th>Recommended Action</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="riskTable"></tbody>
+                    <tbody id="emailTable"></tbody>
                 </table>
             </section>
 
-            <section id="keywords" class="panel">
-                <h2>Most Frequent Keywords</h2>
-                <div id="keywordList" class="keywords"></div>
+            <!-- CHARTS -->
+            <section id="charts" class="charts-grid">
+                <div class="panel">
+                    <h2>Sentiment Distribution</h2>
+                    <div id="sentimentChart" class="chart"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Risk Distribution</h2>
+                    <div id="riskChart" class="chart"></div>
+                </div>
             </section>
 
-            <section id="alerts" class="panel">
-                <h2>System Alerts</h2>
+            <!-- ANALYSIS -->
+            <section id="analysis" class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Analysis Results</h2>
+                        <p>Sentiment, risk and category results generated by the system.</p>
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
-                            <th>Type</th>
+                            <th>Email ID</th>
+                            <th>Sentiment</th>
+                            <th>Risk Level</th>
+                            <th>Category</th>
+                            <th>Reply Tone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysisTable"></tbody>
+                </table>
+            </section>
+
+            <!-- AI REPLIES -->
+            <section id="aiReplies" class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>AI Reply Suggestions</h2>
+                        <p>Suggested customer replies generated according to sentiment and risk.</p>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email ID</th>
+                            <th>Tone</th>
+                            <th>Suggested Reply</th>
                             <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="replyTable"></tbody>
+                </table>
+            </section>
+
+            <!-- ALERTS -->
+            <section id="alerts" class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>System Alerts</h2>
+                        <p>Alerts are generated for high and critical risk emails.</p>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email ID</th>
                             <th>Message</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="alertTable"></tbody>
                 </table>
             </section>
 
+            <!-- REPORTS -->
+            <section id="reports" class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Reports</h2>
+                        <p>Automatic summary report based on current dashboard data.</p>
+                    </div>
+                </div>
+
+                <div id="reportBox" class="report-box"></div>
+            </section>
+
+            <!-- LOGS -->
             <section id="logs" class="panel">
-                <h2>Workflow Logs</h2>
+                <div class="panel-header">
+                    <div>
+                        <h2>Workflow Logs</h2>
+                        <p>System activity and workflow execution history.</p>
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -125,8 +269,9 @@
                     <tbody id="logTable"></tbody>
                 </table>
             </section>
+
         </main>
-    </div>
+    </section>
 
     <script src="app.js"></script>
 </body>
